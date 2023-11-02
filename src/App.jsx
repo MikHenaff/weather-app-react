@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LuSunrise, LuSunset } from "react-icons/lu";
 import {
   PiArrowLeftBold,
@@ -27,14 +27,17 @@ import ThunderstormNight from "./assets/thunderstorm-night.jpg";
 import HomepageBg from "./assets/homepage-bg.jpg";
 
 function App() {
-  // Probleme de chargement des données au clic ************************************************
-  // Voir changement de couleur du texte en fonction des image *******************************
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [geoLocation, setGeoLocation] = useState({});
-  const [data, setData] = useState([]);
+  // Changer heures lever coucher en fonction de la timezone *********************************
   // Ajouter les quatre manquants et changer les flèches *******************************************
   // voir convert wind degrees to direction Campbell Scientific **************************************
+  // Commenter ************************************************************************************
+  // refactoriser => components  ***************************************************************
+
+  const [city, setCity] = useState("");
+  const [cityData, setCityData] = useState([]);
+  const [weatherData, setWeatherData] = useState([]);
+  const [visibleItem, setVisibleItem] = useState(false);
+
   const windDirTab = [
     <PiArrowDownBold key="N" />,
     <PiArrowDownLeftBold key="NE" />,
@@ -46,91 +49,124 @@ function App() {
     <PiArrowDownRightBold key="NW" />,
     <PiArrowDownBold key="N2" />,
   ];
-  const week = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-  const month = [
-    "janv",
-    "fev",
-    "mars",
-    "avril",
-    "mai",
-    "juin",
-    "juil",
-    "août",
-    "sept",
-    "oct",
-    "nov",
-    "déc",
+  const weekTab = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthTab = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
-  const urlCity = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${
-    import.meta.env.VITE_API_KEY
-  }`;
+  useEffect(() => {
+    if (city === "") setVisibleItem(false);
+  }, [city]);
 
-  const urlWeather = `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${
-    geoLocation.lat
-  }&lon=${geoLocation.lon}&appid=${import.meta.env.VITE_API_KEY}&lang=fr`;
+  const searchCity = async function () {
+    if (city !== "") {
+      const cityResponse = await fetch(
+        `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=5&appid=${
+          import.meta.env.VITE_API_KEY
+        }`
+      );
+      const cityData = await cityResponse.json();
+      setCityData(cityData);
+      setVisibleItem(true);
+      if (cityData.length === 0)
+        alert("This city is not available. Please try a valid city.");
+      console.log(cityData);
+    } else {
+      alert("Please enter a city.");
+    }
+  };
 
-  async function SearchWeather() {
-    const cityResponse = await fetch(urlCity);
-    const cityData = await cityResponse.json();
-    setGeoLocation({
-      lon: cityData[0].lon,
-      lat: cityData[0].lat,
-    });
-    setCountry(cityData[0].country);
-    const weatherResponse = await fetch(urlWeather);
+  const searchWeather = async function (lat, lon) {
+    const weatherResponse = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${lat}&lon=${lon}&appid=${
+        import.meta.env.VITE_API_KEY
+      }`
+    );
     const weatherData = await weatherResponse.json();
-    setData(weatherData);
-    console.log(data);
-  }
+    setWeatherData(weatherData);
+    console.log(weatherData);
+  };
 
-  let day = new Date().getDate();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    searchCity();
+  };
+
+  const weekDay = new Date(
+    Math.round(Date.now() + weatherData.timezone * 1000)
+  ).getDay();
+  let day = new Date(
+    Math.round(Date.now() + weatherData.timezone * 1000)
+  ).getDate();
   day < 10 ? (day = `0${day}`) : day;
-  let hour = new Date().getHours();
-  hour < 10 ? (hour = `0${hour}`) : hour;
-  let minute = new Date().getMinutes();
-  minute < 10 ? (minute = `0${minute}`) : minute;
-  const now = `${week[new Date().getDay()]} ${day} ${
-    month[new Date().getMonth()]
-  } - ${hour} : ${minute}`;
+  const month = new Date(
+    Math.round(Date.now() + weatherData.timezone * 1000)
+  ).getMonth();
+  const year = new Date(
+    Math.round(Date.now() + weatherData.timezone * 1000)
+  ).getFullYear();
+  let hours = new Date(
+    Math.round(Date.now() + weatherData.timezone * 1000)
+  ).getUTCHours();
+  hours < 10 ? (hours = `0${hours}`) : hours;
+  let minutes = new Date(
+    Math.round(Date.now() + weatherData.timezone * 1000)
+  ).getMinutes();
+  minutes < 10 ? (minutes = `0${minutes}`) : minutes;
+  const now = `${weekTab[weekDay]}, ${day} ${monthTab[month]} ${year} ${hours}:${minutes}`;
 
   let sunriseTime;
   let sunsetTime;
-  const time = Math.floor(new Date().getTime() / 1000);
   let bgImg;
-  if (data.name) {
-    let sunriseHour = new Date(data.sys.sunrise * 1000).getHours();
+  const time = Math.floor(new Date().getTime() / 1000);
+  if (weatherData.name) {
+    let sunriseHour = new Date(weatherData.sys.sunrise * 1000).getHours();
     sunriseHour < 10 ? (sunriseHour = `0${sunriseHour}`) : sunriseHour;
-    let sunriseMinute = new Date(data.sys.sunrise * 1000).getMinutes();
+    let sunriseMinute = new Date(weatherData.sys.sunrise * 1000).getMinutes();
     sunriseMinute < 10 ? (sunriseMinute = `0${sunriseMinute}`) : sunriseMinute;
     sunriseTime = `${sunriseHour} : ${sunriseMinute}`;
 
-    let sunsetHour = new Date(data.sys.sunset * 1000).getHours();
+    let sunsetHour = new Date(weatherData.sys.sunset * 1000).getHours();
     sunsetHour < 10 ? (sunsetHour = `0${sunsetHour}`) : sunsetHour;
-    let sunsetMinute = new Date(data.sys.sunset * 1000).getMinutes();
+    let sunsetMinute = new Date(weatherData.sys.sunset * 1000).getMinutes();
     sunsetMinute < 10 ? (sunsetMinute = `0${sunsetMinute}`) : sunsetMinute;
     sunsetTime = `${sunsetHour} : ${sunsetMinute}`;
 
-    if (data.weather[0].main === "Clear") {
-      time > data.sys.sunset ? (bgImg = ClearNight) : (bgImg = ClearDay);
-    } else if (data.weather[0].main === "Clouds") {
-      time > data.sys.sunset
+    if (weatherData.weather[0].main === "Clear") {
+      time > weatherData.sys.sunset ? (bgImg = ClearNight) : (bgImg = ClearDay);
+    } else if (weatherData.weather[0].main === "Clouds") {
+      time > weatherData.sys.sunset
         ? (bgImg = bgImg = CloudsNight)
         : (bgImg = CloudsDay);
-    } else if (data.weather[0].main === "Drizzle") {
-      time > data.sys.sunset
+    } else if (weatherData.weather[0].main === "Drizzle") {
+      time > weatherData.sys.sunset
         ? (bgImg = bgImg = DrizzleNight)
         : (bgImg = DrizzleDay);
-    } else if (data.weather[0].main === "Rain") {
-      time > data.sys.sunset ? (bgImg = bgImg = RainNight) : (bgImg = RainDay);
-    } else if (data.weather[0].main === "Snow") {
-      time > data.sys.sunset ? (bgImg = bgImg = SnowNight) : (bgImg = SnowDay);
-    } else if (data.weather[0].main === "Thunderstorm") {
-      time > data.sys.sunset
+    } else if (weatherData.weather[0].main === "Rain") {
+      time > weatherData.sys.sunset
+        ? (bgImg = bgImg = RainNight)
+        : (bgImg = RainDay);
+    } else if (weatherData.weather[0].main === "Snow") {
+      time > weatherData.sys.sunset
+        ? (bgImg = bgImg = SnowNight)
+        : (bgImg = SnowDay);
+    } else if (weatherData.weather[0].main === "Thunderstorm") {
+      time > weatherData.sys.sunset
         ? (bgImg = bgImg = ThunderstormNight)
         : (bgImg = ThunderstormDay);
     } else {
-      time > data.sys.sunset ? (bgImg = MistNight) : (bgImg = MistDay);
+      time > weatherData.sys.sunset ? (bgImg = MistNight) : (bgImg = MistDay);
     }
   }
 
@@ -139,56 +175,99 @@ function App() {
       <div
         className="flex flex-col justify-between items-center h-full bg-center bg-no-repeat bg-cover"
         style={{
-          backgroundImage: data.name ? `url(${bgImg})` : `url(${HomepageBg})`,
+          backgroundImage: weatherData.name
+            ? `url(${bgImg})`
+            : `url(${HomepageBg})`,
         }}
       >
-        <div className="flex flex-col items-center pt-5">
-          <input
-            type="text"
-            placeholder="Entrez une ville..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="py-3 pl-5 mb-3 text-black rounded-[50px]"
-          />
-          <button
-            onClick={SearchWeather}
-            className="w-fit px-3 py-2 border-2 border-white rounded-[50px]"
-          >
-            Rechercher
-          </button>
-          {data.name && (
-            <div className="flex flex-col items-center mt-10">
+        <div>
+          <form onSubmit={handleSubmit} className="flex justfy-center pt-5">
+            <input
+              type="text"
+              placeholder="Enter a city..."
+              autoFocus
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="py-3 pl-5 outline-none text-black rounded-md"
+              style={{
+                boxShadow: "1px 1px 1px black, -1px -1px 1px black",
+              }}
+            />
+            <button
+              type="submit"
+              onClick={searchCity}
+              className="w-fit px-2 ml-2 text-xl border border-white bg-white/20 rounded-md"
+              style={{
+                textShadow: "1px 1px 1px black, -1px -1px 1px black",
+                boxShadow: "1px 1px 1px black, -1px -1px 1px black",
+              }}
+            >
+              🔍
+            </button>
+          </form>
+
+          {visibleItem && cityData.length > 0 && (
+            <ul
+              className="w-full mt-1 text-center bg-white text-black border rounded-md"
+              style={{
+                boxShadow: "1px 1px 1px black, -1px -1px 1px black",
+              }}
+            >
+              {cityData.map((city, index) => (
+                <li
+                  key={`${city.country}-${index}`}
+                  onClick={() => {
+                    searchWeather(city.lat, city.lon);
+                    setCity("");
+                    setVisibleItem(!visibleItem);
+                  }}
+                  className="py-3 border-b last:border-0 cursor-pointer hover:bg-gray-300/30"
+                >
+                  {city.name}, {city.country}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {weatherData.name && (
+            <div
+              className="flex flex-col items-center mt-10"
+              style={{ textShadow: "1px 1px 2px black, -1px -1px 2px black" }}
+            >
               <p className="text-3xl">
-                {data.name}, {country}
+                {weatherData.name}, {weatherData.sys.country}
               </p>
               <p>{now}</p>
               <p className="text-7xl lg:text-8xl mt-20 mb-2">
-                {Math.round(data.main.temp)} °C
+                {Math.round(weatherData.main.temp)} °C
               </p>
               <p className="mb-3">
-                ( Ressenti: {Math.round(data.main.feels_like)} °C )
+                ( Feels like: {Math.round(weatherData.main.feels_like)} °C )
               </p>
               <div className="flex text-2xl mb-10">
-                <p>Max {Math.floor(data.main.temp_max)} °C&nbsp;&nbsp;/</p>
-                <p>&nbsp;&nbsp; Min {Math.floor(data.main.temp_min)} °C</p>
+                <p>
+                  Max {Math.floor(weatherData.main.temp_max)} °C&nbsp;&nbsp;/
+                </p>
+                <p>
+                  &nbsp;&nbsp; Min {Math.floor(weatherData.main.temp_min)} °C
+                </p>
               </div>
-              {/* A voir css quand plusieurs descriptions*****************************************/}
-              <p className="text-3xl">
-                {data.weather.map((item) => (
+              <div className="text-3xl text-center">
+                {weatherData.weather.map((item) => (
                   <p key={item.description}>
                     {item.description.charAt(0).toUpperCase() +
                       item.description.slice(1)}
                   </p>
                 ))}
-              </p>
+              </div>
             </div>
           )}
         </div>
 
-        {data.name && (
-          <div className="flex w-[90%] max-w-[500px] justify-between mb-5 px-3 pt-2 pb-3 bg-gray-300/20 rounded-md">
+        {weatherData.name && (
+          <div className="flex w-[90%] max-w-[500px] justify-between mb-5 px-3 pt-2 pb-3 bg-gray-900/40 rounded-md">
             <div className="flex flex-col w-fit">
-              <p className="text-center mb-2 font-bold">Soleil</p>
+              <p className="text-center mb-2 font-bold">Sun</p>
               <div>
                 <p className="flex items-center">
                   <LuSunrise className="mr-3" /> {sunriseTime}
@@ -199,24 +278,26 @@ function App() {
               </div>
             </div>
             <div className="flex flex-col w-fit">
-              <p className="text-center mb-2 font-bold">Vent</p>
+              <p className="text-center mb-2 font-bold">Wind</p>
               <div>
                 <div className="flex items-center">
                   <p className="mr-2">
-                    {windDirTab[Math.round((data.wind.deg % 360) / 45)]}
+                    {windDirTab[Math.round((weatherData.wind.deg % 360) / 45)]}
                   </p>
-                  <p>{Math.round((data.wind.speed * 3600) / 1000)} km/h</p>
+                  <p>
+                    {Math.round((weatherData.wind.speed * 3600) / 1000)} km/h
+                  </p>
                 </div>
-                {data.wind.gust && (
-                  <p className="text-center bg-red-500 rounded-[25px]">
-                    {Math.round((data.wind.gust * 3600) / 1000)} km/h
+                {weatherData.wind.gust && (
+                  <p className="text-center bg-red-500 rounded-md">
+                    {Math.round((weatherData.wind.gust * 3600) / 1000)} km/h
                   </p>
                 )}
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <p className="mb-2 font-bold">Humidité</p>
-              <p>{data.main.humidity}%</p>
+              <p className="mb-2 font-bold">Humidity</p>
+              <p>{weatherData.main.humidity}%</p>
             </div>
           </div>
         )}
