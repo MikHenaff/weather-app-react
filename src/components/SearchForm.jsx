@@ -6,7 +6,7 @@ const SearchForm = ({ city, setCity, searchCity }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex justfy-center pt-5">
+    <form onSubmit={handleSubmit} className="flex justify-center pt-5">
       <input
         type="text"
         placeholder="Enter a city..."

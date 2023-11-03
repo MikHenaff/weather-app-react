@@ -20,6 +20,7 @@ import SnowNight from "./assets/snow-night.jpg";
 import ThunderstormDay from "./assets/thunderstorm-day.jpg";
 import ThunderstormNight from "./assets/thunderstorm-night.jpg";
 import HomepageBg from "./assets/homepage-bg.jpg";
+import Homepage from "./components/Homepage";
 
 function App() {
   const [cityInput, setCityInput] = useState("");
@@ -118,6 +119,7 @@ function App() {
             setCity={setCityInput}
             searchCity={searchCity}
           />
+          {!visibleItem && !weatherData.name && <Homepage />}
           {visibleItem && cityData.length > 0 && (
             <CitiesList
               cityData={cityData}
