@@ -9,16 +9,13 @@ import ClearDay from "./assets/clear-day.jpg";
 import ClearNight from "./assets/clear-night.jpg";
 import CloudsDay from "./assets/clouds-day.jpg";
 import CloudsNight from "./assets/clouds-night.jpg";
-import DrizzleDay from "./assets/drizzle-day.jpg";
-import DrizzleNight from "./assets/drizzle-night.jpg";
 import MistDay from "./assets/mist-day.jpg";
 import MistNight from "./assets/mist-night.jpg";
 import RainDay from "./assets/rain-day.jpg";
 import RainNight from "./assets/rain-night.jpg";
 import SnowDay from "./assets/snow-day.jpg";
 import SnowNight from "./assets/snow-night.jpg";
-import ThunderstormDay from "./assets/thunderstorm-day.jpg";
-import ThunderstormNight from "./assets/thunderstorm-night.jpg";
+import Thunderstorm from "./assets/thunderstorm.jpg";
 import HomepageBg from "./assets/homepage-bg.jpg";
 import Homepage from "./components/Homepage";
 
@@ -68,7 +65,7 @@ function App() {
     console.log(weatherData);
   };
 
-  //Background-image according to main weather
+  //Background-image according to main weather and time (day or night)
 
   let bgImg;
   if (weatherData.name) {
@@ -80,11 +77,10 @@ function App() {
       weatherData.weather[0].icon.includes("d")
         ? (bgImg = CloudsDay)
         : (bgImg = CloudsNight);
-    } else if (weatherData.weather[0].main === "Drizzle") {
-      weatherData.weather[0].icon.includes("d")
-        ? (bgImg = DrizzleDay)
-        : (bgImg = DrizzleNight);
-    } else if (weatherData.weather[0].main === "Rain") {
+    } else if (
+      weatherData.weather[0].main === "Rain" ||
+      weatherData.weather[0].main === "Drizzle"
+    ) {
       weatherData.weather[0].icon.includes("d")
         ? (bgImg = RainDay)
         : (bgImg = RainNight);
@@ -93,9 +89,7 @@ function App() {
         ? (bgImg = SnowDay)
         : (bgImg = SnowNight);
     } else if (weatherData.weather[0].main === "Thunderstorm") {
-      weatherData.weather[0].icon.includes("d")
-        ? (bgImg = ThunderstormDay)
-        : (bgImg = ThunderstormNight);
+      bgImg = Thunderstorm;
     } else {
       weatherData.weather[0].icon.includes("d")
         ? (bgImg = MistDay)

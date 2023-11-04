@@ -1,8 +1,22 @@
 const Homepage = () => {
   return (
-    <div className="w-full h-[500px] flex flex-col items-center justify-evenly mt-24 text-gray-300 font-bold">
-      <p className="text-5xl">Welcome</p>
-      <p className="text-3xl">To</p>
+    <div className="w-full h-[500px] flex flex-col items-center justify-evenly mt-24 text-gray-500 font-bold">
+      <p
+        className="text-5xl"
+        style={{
+          textShadow: "1px 1px 2px white, -1px -1px 2px white",
+        }}
+      >
+        Welcome
+      </p>
+      <p
+        className="text-3xl"
+        style={{
+          textShadow: "1px 1px 2px white, -1px -1px 2px white",
+        }}
+      >
+        to
+      </p>
       <p
         className="text-7xl text-center "
         style={{
