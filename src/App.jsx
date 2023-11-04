@@ -35,14 +35,19 @@ function App() {
     if (cityInput === "") setVisibleItem(false);
   }, [cityInput]);
 
+  const apiKey = JSON.stringify(import.meta.env.VITE_API_KEY);
+
   // Search for cities from the Geocoding API of OpenWeatherMap
 
   const searchCity = async function () {
     if (cityInput !== "") {
+      //const cityResponse = await fetch(
+      //  `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${
+      //    import.meta.env.VITE_API_KEY
+      //  }`
+      //);
       const cityResponse = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${
-          import.meta.env.VITE_API_KEY
-        }`
+        `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${apiKey}`
       );
       const cityData = await cityResponse.json();
       setCityData(cityData);
