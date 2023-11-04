@@ -46,7 +46,6 @@ function App() {
       setVisibleItem(true);
       if (cityData.length === 0)
         alert("This city is not available. Please try a valid city.");
-      console.log(cityData);
     } else {
       alert("Please enter a city.");
     }
@@ -62,7 +61,6 @@ function App() {
     );
     const weatherData = await weatherResponse.json();
     setWeatherData(weatherData);
-    console.log(weatherData);
   };
 
   //Background-image according to main weather and time (day or night)
