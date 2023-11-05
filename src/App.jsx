@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 
+import Homepage from "./components/Homepage";
 import SearchForm from "./components/SearchForm";
 import CitiesList from "./components/CitiesList";
 import WeatherMainInfos from "./components/WeatherMainInfos";
 import WeatherThumbnail from "./components/WeatherThumbnail";
 
-import ClearDay from "./assets/clear-day.jpg";
-import ClearNight from "./assets/clear-night.jpg";
-import CloudsDay from "./assets/clouds-day.jpg";
-import CloudsNight from "./assets/clouds-night.jpg";
-import MistDay from "./assets/mist-day.jpg";
-import MistNight from "./assets/mist-night.jpg";
-import RainDay from "./assets/rain-day.jpg";
-import RainNight from "./assets/rain-night.jpg";
-import SnowDay from "./assets/snow-day.jpg";
-import SnowNight from "./assets/snow-night.jpg";
-import Thunderstorm from "./assets/thunderstorm.jpg";
-import HomepageBg from "./assets/homepage-bg.jpg";
-import Homepage from "./components/Homepage";
+import ClearDay from "./assets/bg-imgs/clear-day.jpg";
+import ClearNight from "./assets/bg-imgs/clear-night.webp";
+import CloudsDay from "./assets/bg-imgs/clouds-day.webp";
+import CloudsNight from "./assets/bg-imgs/clouds-night.webp";
+import MistDay from "./assets/bg-imgs/mist-day.jpg";
+import MistNight from "./assets/bg-imgs/mist-night.jpg";
+import RainDay from "./assets/bg-imgs/rain-day.webp";
+import RainNight from "./assets/bg-imgs/rain-night.jpg";
+import SnowDay from "./assets/bg-imgs/snow-day.webp";
+import SnowNight from "./assets/bg-imgs/snow-night.webp";
+import Thunderstorm from "./assets/bg-imgs/thunderstorm.webp";
+import HomepageBg from "./assets/bg-imgs/homepage.webp";
 
 function App() {
   const [cityInput, setCityInput] = useState("");
