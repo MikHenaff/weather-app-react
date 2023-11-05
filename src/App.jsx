@@ -34,12 +34,12 @@ function App() {
 
   // Search for cities from the Geocoding API of OpenWeatherMap
 
-  const apiKey = "3217abfbbb15c05d1fa52d0fe87fce38";
-
   const searchCity = async function () {
     if (cityInput !== "") {
       const cityResponse = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${apiKey}`
+        `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${
+          import.meta.env.VITE_API_KEY
+        }`
       );
       const cityData = await cityResponse.json();
       setCityData(cityData);
@@ -54,7 +54,9 @@ function App() {
 
   const searchWeather = async function (lat, lon) {
     const weatherResponse = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${lat}&lon=${lon}&appid=${apiKey}`
+      `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${lat}&lon=${lon}&appid=${
+        import.meta.env.VITE_API_KEY
+      }`
     );
     const weatherData = await weatherResponse.json();
     setWeatherData(weatherData);
