@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Homepage from "./components/Homepage";
 import SearchForm from "./components/SearchForm";
 import CitiesList from "./components/CitiesList";
 import WeatherMainInfos from "./components/WeatherMainInfos";
 import WeatherThumbnail from "./components/WeatherThumbnail";
+import Loader from "./components/Loader";
 
-import ClearDay from "./assets/bg-imgs/clear-day.jpg";
+import ClearDay from "./assets/bg-imgs/clear-day.webp";
 import ClearNight from "./assets/bg-imgs/clear-night.webp";
 import CloudsDay from "./assets/bg-imgs/clouds-day.webp";
 import CloudsNight from "./assets/bg-imgs/clouds-night.webp";
@@ -17,52 +18,95 @@ import RainNight from "./assets/bg-imgs/rain-night.jpg";
 import SnowDay from "./assets/bg-imgs/snow-day.webp";
 import SnowNight from "./assets/bg-imgs/snow-night.webp";
 import Thunderstorm from "./assets/bg-imgs/thunderstorm.webp";
+import Tornado from "./assets/bg-imgs/tornado.jpg";
 import HomepageBg from "./assets/bg-imgs/homepage.webp";
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
   const [cityInput, setCityInput] = useState("");
   const [cityData, setCityData] = useState([]);
   const [cityName, setCityName] = useState("");
   const [weatherData, setWeatherData] = useState([]);
-  const [visibleItem, setVisibleItem] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  //// Hide the list of cities by clearing the input field after enabling city search and display
+  const inputRef = useRef(null);
+
+  // Preload background images
 
   useEffect(() => {
-    if (cityInput === "") setVisibleItem(false);
+    const imgs = [
+      ClearDay,
+      ClearNight,
+      CloudsDay,
+      CloudsNight,
+      MistDay,
+      MistNight,
+      RainDay,
+      RainNight,
+      SnowDay,
+      SnowNight,
+      Thunderstorm,
+      HomepageBg,
+    ];
+
+    cacheImages(imgs);
+  }, []);
+
+  const cacheImages = async (srcArray) => {
+    const promises = await srcArray.map((src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = resolve();
+        img.onerror = reject();
+      });
+    });
+    await Promise.all(promises);
+    setIsLoading(false);
+  };
+
+  // Fetch the cities with same name from the Geocoding API of OpenWeatherMap and store their latitude and longitude
+
+  useEffect(() => {
+    const fetchCities = async function () {
+      try {
+        const cityResponse = await fetch(
+          `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${
+            import.meta.env.VITE_API_KEY
+          }`
+        );
+        const cityData = await cityResponse.json();
+        setCityData(cityData);
+        setShowDropdown(true);
+      } catch (error) {
+        alert("Error retrieving cities: " + error.message);
+      }
+    };
+
+    if (cityInput) {
+      fetchCities();
+    } else {
+      setShowDropdown(false);
+    }
   }, [cityInput]);
 
-  // Search for cities from the Geocoding API of OpenWeatherMap
+  // Retrieve weather data for the selected city from the Current Weather Data API of OpenWeatherMap
 
-  const searchCity = async function () {
-    if (cityInput !== "") {
-      const cityResponse = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${cityInput}&limit=5&appid=${
+  const fetchWeather = async function (lat, lon) {
+    try {
+      const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${lat}&lon=${lon}&appid=${
           import.meta.env.VITE_API_KEY
         }`
       );
-      const cityData = await cityResponse.json();
-      setCityData(cityData);
-      setVisibleItem(true);
-      if (cityData.length === 0)
-        alert("This city is not available. Please try a valid city.");
-    } else {
-      alert("Please enter a city.");
+      const weatherData = await weatherResponse.json();
+      setWeatherData(weatherData);
+    } catch (error) {
+      alert("Error retrieving weather data: " + error.message);
     }
   };
-  // Retrieve weather data for the selected city from the Current Weather Data API of OpenWeatherMap
 
-  const searchWeather = async function (lat, lon) {
-    const weatherResponse = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${lat}&lon=${lon}&appid=${
-        import.meta.env.VITE_API_KEY
-      }`
-    );
-    const weatherData = await weatherResponse.json();
-    setWeatherData(weatherData);
-  };
-
-  //Background-image according to main weather and time (day or night)
+  // Set background-image according to main weather and time (day or night)
 
   let bgImg;
   if (weatherData.name) {
@@ -87,6 +131,11 @@ function App() {
         : (bgImg = SnowNight);
     } else if (weatherData.weather[0].main === "Thunderstorm") {
       bgImg = Thunderstorm;
+    } else if (
+      weatherData.weather[0].main === "Tornado" ||
+      weatherData.weather[0].main === "Squall"
+    ) {
+      bgImg = Tornado;
     } else {
       weatherData.weather[0].icon.includes("d")
         ? (bgImg = MistDay)
@@ -96,37 +145,42 @@ function App() {
 
   return (
     <div className="w-full h-screen text-white">
-      <div
-        className="flex flex-col justify-between items-center h-full bg-center bg-no-repeat bg-cover"
-        style={{
-          backgroundImage: weatherData.name
-            ? `url(${bgImg})`
-            : `url(${HomepageBg})`,
-        }}
-      >
-        <div>
-          <SearchForm
-            city={cityInput}
-            setCity={setCityInput}
-            searchCity={searchCity}
-          />
-          {!visibleItem && !weatherData.name && <Homepage />}
-          {visibleItem && cityData.length > 0 && (
-            <CitiesList
-              cityData={cityData}
-              visibleItem={visibleItem}
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <div
+          className="flex flex-col justify-between items-center h-full bg-center bg-no-repeat bg-cover"
+          style={{
+            backgroundImage: weatherData.name
+              ? `url(${bgImg})`
+              : `url(${HomepageBg})`,
+          }}
+        >
+          <div>
+            <SearchForm
+              cityInput={cityInput}
               setCityInput={setCityInput}
-              setCityName={setCityName}
-              searchWeather={searchWeather}
-              setVisibleItem={setVisibleItem}
+              inputRef={inputRef}
             />
-          )}
-          {weatherData.name && (
-            <WeatherMainInfos cityName={cityName} weatherData={weatherData} />
-          )}
+            {!showDropdown && !weatherData.name && <Homepage />}
+            {showDropdown && cityData.length > 0 && (
+              <CitiesList
+                cityData={cityData}
+                setCityInput={setCityInput}
+                setCityName={setCityName}
+                fetchWeather={fetchWeather}
+                showDropdown={showDropdown}
+                setShowDropdown={setShowDropdown}
+                inputRef={inputRef}
+              />
+            )}
+            {weatherData.name && (
+              <WeatherMainInfos cityName={cityName} weatherData={weatherData} />
+            )}
+          </div>
+          {weatherData.name && <WeatherThumbnail weatherData={weatherData} />}
         </div>
-        {weatherData.name && <WeatherThumbnail weatherData={weatherData} />}
-      </div>
+      )}
     </div>
   );
 }

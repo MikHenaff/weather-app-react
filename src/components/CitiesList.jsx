@@ -1,10 +1,11 @@
 const CitiesList = ({
   cityData,
-  visibleItem,
   setCityInput,
   setCityName,
-  searchWeather,
-  setVisibleItem,
+  fetchWeather,
+  showDropdown,
+  setShowDropdown,
+  inputRef,
 }) => {
   return (
     <ul
@@ -17,10 +18,11 @@ const CitiesList = ({
         <li
           key={`${city.country}-${index}`}
           onClick={() => {
-            searchWeather(city.lat, city.lon);
+            fetchWeather(city.lat, city.lon);
             setCityInput("");
+            inputRef.current.focus();
             setCityName(city.name);
-            setVisibleItem(!visibleItem);
+            setShowDropdown(!showDropdown);
           }}
           className="py-3 border-b last:border-0 cursor-pointer hover:bg-gray-300/30"
         >
