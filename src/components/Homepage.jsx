@@ -1,6 +1,6 @@
 const Homepage = () => {
   return (
-    <div className="w-full h-[500px] flex flex-col items-center justify-evenly mt-24 text-gray-500 font-bold">
+    <div className="w-full h-[500px] flex flex-col items-center justify-evenly sm:mt-24 text-gray-500 font-bold">
       <p
         className="text-5xl"
         style={{

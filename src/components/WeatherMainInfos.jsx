@@ -31,20 +31,20 @@ const WeatherMainInfos = ({ cityName, weatherData }) => {
 
   return (
     <div
-      className="flex flex-col items-center mt-20"
+      className="flex flex-col items-center mt-6 sm:mt-20"
       style={{ textShadow: "1px 1px 2px black, -1px -1px 2px black" }}
     >
       <p className="text-3xl">
         {cityName}, {weatherData.sys.country}
       </p>
       <p>{now}</p>
-      <p className="text-7xl lg:text-8xl mt-20 mb-2">
+      <p className="text-7xl lg:text-8xl mt-16 sm:mt-20 mb-2">
         {Math.round(weatherData.main.temp)} °C
       </p>
       <p className="mb-3">
         ( Feels like: {Math.round(weatherData.main.feels_like)} °C )
       </p>
-      <div className="flex text-2xl mb-10">
+      <div className="flex text-2xl mb-4 sm:mb-10">
         <p>Max {Math.floor(weatherData.main.temp_max)} °C&nbsp;&nbsp;/</p>
         <p>&nbsp;&nbsp; Min {Math.floor(weatherData.main.temp_min)} °C</p>
       </div>
